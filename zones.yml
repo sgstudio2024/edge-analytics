@@ -1,6 +1,0 @@
-accounts:
-  - name: "账户名称"
-    token: "your_cloudflare_api_token"
-    zones:
-      - zone_id: "your_zone_id"
-        domain: "your-domain.com"
