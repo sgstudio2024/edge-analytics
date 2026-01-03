@@ -255,7 +255,7 @@
     let config = {
       provider: 'cloudflare',
       cloudflare: { enabled: true, accounts: [] },
-      edgeone: { enabled: false, secretId: '', secretKey: '', region: 'ap-hongkong', sites: [] },
+      edgeone: { enabled: false, accounts: [] },
       website: { title: 'Analytics Dashboard', favicon: '/favicon.svg', description: '' },
       updateInterval: 2
     };
@@ -290,7 +290,13 @@
     async function loadConfig() {
       try {
         const response = await fetch('/api/config');
-        config = await response.json();
+        const serverConfig = await response.json();
+        config = {
+          ...config,
+          ...serverConfig,
+          cloudflare: { enabled: true, accounts: [], ...(serverConfig.cloudflare || {}) },
+          edgeone: { enabled: false, accounts: [], ...(serverConfig.edgeone || {}) }
+        };
         renderConfig();
       } catch (error) {
         showModal('error', '✗ 加载失败', `无法加载配置: ${error.message}<br><br><small>请确保服务器正在运行。</small>`);
@@ -308,10 +314,15 @@
       document.getElementById('website-description').value = config.website?.description || '';
       document.getElementById('update-interval').value = config.updateInterval || 2;
 
-      if (config.edgeone) {
-        document.getElementById('edgeone-secret-id').value = config.edgeone.secretId || '';
-        document.getElementById('edgeone-secret-key').value = config.edgeone.secretKey || '';
-        document.getElementById('edgeone-region').value = config.edgeone.region || 'ap-hongkong';
+      if (config.edgeone && config.edgeone.accounts && config.edgeone.accounts.length > 0) {
+        const edgeoneAccount = config.edgeone.accounts[0];
+        document.getElementById('edgeone-secret-id').value = edgeoneAccount.secretId || '';
+        document.getElementById('edgeone-secret-key').value = edgeoneAccount.secretKey || '';
+        document.getElementById('edgeone-region').value = edgeoneAccount.region || 'ap-hongkong';
+      } else {
+        document.getElementById('edgeone-secret-id').value = '';
+        document.getElementById('edgeone-secret-key').value = '';
+        document.getElementById('edgeone-region').value = 'ap-hongkong';
       }
 
       renderCloudflareAccounts();
