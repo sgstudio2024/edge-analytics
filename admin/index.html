@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard - 管理后台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; min-height: 100vh; }
+    .admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3); }
+    .header h1 { font-size: 28px; margin-bottom: 10px; }
+    .header p { opacity: 0.9; }
+    .card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+    .card-title { font-size: 20px; font-weight: 600; color: #1a1a2e; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #f0f2f5; display: flex; align-items: center; gap: 12px; }
+    .card-title .icon { font-size: 24px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 500; color: #4a5568; margin-bottom: 8px; font-size: 14px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s; background: #fafbfc; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); background: white; }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .btn { padding: 12px 24px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+    .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3); }
+    .btn-success:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4); }
+    .btn-danger { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); color: white; }
+    .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(235, 51, 73, 0.4); }
+    .btn-secondary { background: #e2e8f0; color: #4a5568; }
+    .btn-secondary:hover { background: #cbd5e0; }
+    .btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+    .provider-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px; }
+    .provider-card { border: 3px solid #e2e8f0; border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s; text-align: center; }
+    .provider-card:hover { border-color: #667eea; transform: translateY(-4px); }
+    .provider-card.active { border-color: #667eea; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15); }
+    .provider-card .provider-icon { font-size: 48px; margin-bottom: 12px; }
+    .provider-card .provider-name { font-weight: 600; font-size: 18px; color: #1a1a2e; margin-bottom: 8px; }
+    .provider-card .provider-desc { font-size: 13px; color: #718096; }
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+    .status-success { background: #c6f6d5; color: #276749; }
+    .status-error { background: #fed7d7; color: #c53030; }
+    .status-warning { background: #fefcbf; color: #b7791f; }
+    .account-item, .zone-item { background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
+    .account-item h4 { color: #1a1a2e; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .zone-item h5 { color: #4a5568; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .remove-btn { background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 18px; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
+    .remove-btn:hover { background: #fed7d7; }
+    .tabs { display: flex; gap: 4px; background: #f0f2f5; padding: 4px; border-radius: 12px; margin-bottom: 24px; }
+    .tab { flex: 1; padding: 12px 20px; border: none; background: transparent; cursor: pointer; border-radius: 10px; font-weight: 500; color: #718096; transition: all 0.2s; }
+    .tab.active { background: white; color: #667eea; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .alert { padding: 16px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .alert-success { background: #c6f6d5; color: #276749; }
+    .alert-error { background: #fed7d7; color: #c53030; }
+    .alert-info { background: #bee3f8; color: #2b6cb0; }
+    .loading { display: flex; align-items: center; gap: 12px; padding: 20px; justify-content: center; }
+    .spinner { width: 24px; height: 24px; border: 3px solid #e2e8f0; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: white; border-radius: 20px; padding: 32px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-icon { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px; }
+    .modal-icon.success { background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%); }
+    .modal-icon.error { background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%); }
+    .modal-icon.warning { background: linear-gradient(135deg, #fefcbf 0%, #faf089 100%); }
+    .modal-icon.info { background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%); }
+    .modal-icon.loading { background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%); }
+    .modal-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+    .modal-message { font-size: 15px; color: #4a5568; margin-bottom: 24px; line-height: 1.6; }
+    .modal-btn { padding: 12px 32px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .modal-btn.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .modal-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+    .modal-btn.success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+    .modal-btn.danger { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); color: white; }
+    .modal-btn:hover { transform: translateY(-2px); }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-top: 20px; }
+    .stat-item { background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 20px; border-radius: 12px; text-align: center; }
+    .stat-item .value { font-size: 24px; font-weight: 700; color: #667eea; }
+    .stat-item .label { font-size: 13px; color: #718096; margin-top: 4px; }
+    .preview-section { background: #f8fafc; border-radius: 12px; padding: 24px; margin-top: 20px; }
+    .preview-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+    .preview-favicon { width: 32px; height: 32px; }
+    .preview-title { font-size: 18px; font-weight: 600; color: #1a1a2e; }
+    footer { text-align: center; padding: 30px; color: #a0aec0; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="header">
+      <h1>🔧 管理后台</h1>
+      <p>配置 Analytics Dashboard 的 API 提供商和网站设置</p>
+    </div>
+
+    <div id="alert-container"></div>
+  
+  <div id="modal-overlay" class="modal-overlay">
+    <div id="modal" class="modal">
+      <div id="modal-icon" class="modal-icon"></div>
+      <h3 id="modal-title" class="modal-title"></h3>
+      <p id="modal-message" class="modal-message"></p>
+      <button id="modal-btn" class="modal-btn primary" onclick="closeModal()">确定</button>
+    </div>
+  </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="icon">☁️</span> 选择 API 提供商</h2>
+      <div class="provider-selector">
+        <div class="provider-card" id="provider-cloudflare" onclick="selectProvider('cloudflare')">
+          <div class="provider-icon">☁️</div>
+          <div class="provider-name">Cloudflare</div>
+          <div class="provider-desc">使用 Cloudflare Analytics API</div>
+        </div>
+        <div class="provider-card" id="provider-edgeone" onclick="selectProvider('edgeone')">
+          <div class="provider-icon">⚡</div>
+          <div class="provider-name">腾讯云 EdgeOne</div>
+          <div class="provider-desc">使用腾讯云 EdgeOne API (SecretId + SecretKey)</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cloudflare-config" class="card">
+      <h2 class="card-title"><span class="icon">☁️</span> Cloudflare 配置</h2>
+      
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('cf-accounts', event)">账户管理</button>
+        <button class="tab" onclick="showTab('cf-validate', event)">Token 验证</button>
+      </div>
+
+      <div id="cf-accounts" class="tab-content active">
+        <div id="cf-accounts-list"></div>
+        <button class="btn btn-primary" onclick="addCloudflareAccount()">+ 添加 Cloudflare 账户</button>
+      </div>
+
+      <div id="cf-validate" class="tab-content">
+        <div class="form-group">
+          <label>API Token</label>
+          <input type="password" id="cf-validate-token" placeholder="输入您的 Cloudflare API Token">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="validateCloudflareToken()">验证 Token</button>
+        </div>
+        <div id="cf-validate-result" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+
+    <div id="edgeone-config" class="card" style="display: none;">
+      <h2 class="card-title"><span class="icon">⚡</span> 腾讯云 EdgeOne 配置</h2>
+      
+      <div class="alert alert-info">
+        <span>ℹ️</span>
+        <div>
+          <strong>腾讯云 EdgeOne 使用 SecretId + SecretKey 进行接口鉴权：</strong>
+          <p style="margin-top: 8px; font-size: 13px;">
+            请前往 
+            <a href="https://console.cloud.tencent.com/cam/capi" target="_blank" style="color: #667eea;">腾讯云控制台</a> 
+            获取您的 API 密钥。建议使用子账户密钥以提高安全性。
+          </p>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>SecretId</label>
+          <input type="text" id="edgeone-secret-id" placeholder="输入您的 SecretId">
+        </div>
+        <div class="form-group">
+          <label>SecretKey</label>
+          <input type="password" id="edgeone-secret-key" placeholder="输入您的 SecretKey">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>地域</label>
+        <select id="edgeone-region">
+          <option value="ap-hongkong">香港 (ap-hongkong)</option>
+          <option value="ap-singapore">新加坡 (ap-singapore)</option>
+          <option value="ap-mumbai">孟买 (ap-mumbai)</option>
+          <option value="ap-tokyo">东京 (ap-tokyo)</option>
+          <option value="na-silicon-valley">硅谷 (na-silicon-valley)</option>
+        </select>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-success" onclick="validateEdgeOneCredentials()">验证凭证</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🌐</span> 网站设置</h2>
+      
+      <div class="form-group">
+        <label>网站标题</label>
+        <input type="text" id="website-title" placeholder="Analytics Dashboard">
+      </div>
+      
+      <div class="form-group">
+        <label>网站图标 URL</label>
+        <input type="text" id="website-favicon" placeholder="/favicon.svg">
+      </div>
+      
+      <div class="form-group">
+        <label>网站描述</label>
+        <textarea id="website-description" placeholder="多账户、多 Zone 的流量分析仪表盘"></textarea>
+      </div>
+
+      <div class="preview-section">
+        <div class="preview-header">
+          <img id="preview-favicon" class="preview-favicon" src="/favicon.svg" alt="Favicon">
+          <span id="preview-title" class="preview-title">Analytics Dashboard</span>
+        </div>
+        <p id="preview-description" style="color: #718096;">多账户、多 Zone 的流量分析仪表盘</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="icon">⚙️</span> 更新设置</h2>
+      
+      <div class="form-group">
+        <label>数据更新间隔（小时）</label>
+        <select id="update-interval">
+          <option value="1">每 1 小时</option>
+          <option value="2">每 2 小时</option>
+          <option value="6">每 6 小时</option>
+          <option value="12">每 12 小时</option>
+          <option value="24">每 24 小时</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="icon">📊</span> 系统状态</h2>
+      <div id="system-status">
+        <div class="loading">
+          <div class="spinner"></div>
+          <span>加载中...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-group" style="justify-content: center; margin-top: 40px;">
+      <button class="btn btn-success" onclick="saveAllConfig()" style="padding: 16px 48px; font-size: 16px;">💾 保存所有设置</button>
+      <button class="btn btn-primary" onclick="triggerUpdate()" style="padding: 16px 48px; font-size: 16px;">🔄 立即更新数据</button>
+      <button class="btn btn-danger" onclick="resetSystem()" style="padding: 16px 48px; font-size: 16px;">🗑️ 恢复初始</button>
+    </div>
+
+    <footer>
+      <p>Analytics Dashboard Admin | Powered by Cloudflare & 腾讯云 EdgeOne</p>
+    </footer>
+  </div>
+
+  <script>
+    let config = {
+      provider: 'cloudflare',
+      cloudflare: { enabled: true, accounts: [] },
+      edgeone: { enabled: false, secretId: '', secretKey: '', region: 'ap-hongkong', sites: [] },
+      website: { title: 'Analytics Dashboard', favicon: '/favicon.svg', description: '' },
+      updateInterval: 2
+    };
+    let token = null;
+
+    async function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      token = urlParams.get('token');
+
+      if (!token) {
+        window.location.href = '/admin/login.html';
+        return;
+      }
+
+      try {
+        const verifyResponse = await fetch('/api/admin/verify', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const verifyData = await verifyResponse.json();
+        if (!verifyData.valid) {
+          window.location.href = '/admin/login.html';
+          return;
+        }
+      } catch (error) {
+        window.location.href = '/admin/login.html';
+        return;
+      }
+
+      await loadConfig();
+    }
+
+    async function loadConfig() {
+      try {
+        const response = await fetch('/api/config');
+        config = await response.json();
+        renderConfig();
+      } catch (error) {
+        showModal('error', '✗ 加载失败', `无法加载配置: ${error.message}<br><br><small>请确保服务器正在运行。</small>`);
+      }
+    }
+
+    function renderConfig() {
+      document.getElementById('provider-cloudflare').classList.toggle('active', config.provider === 'cloudflare');
+      document.getElementById('provider-edgeone').classList.toggle('active', config.provider === 'edgeone');
+      document.getElementById('cloudflare-config').style.display = config.provider === 'cloudflare' ? 'block' : 'none';
+      document.getElementById('edgeone-config').style.display = config.provider === 'edgeone' ? 'block' : 'none';
+      
+      document.getElementById('website-title').value = config.website?.title || '';
+      document.getElementById('website-favicon').value = config.website?.favicon || '/favicon.svg';
+      document.getElementById('website-description').value = config.website?.description || '';
+      document.getElementById('update-interval').value = config.updateInterval || 2;
+
+      if (config.edgeone) {
+        document.getElementById('edgeone-secret-id').value = config.edgeone.secretId || '';
+        document.getElementById('edgeone-secret-key').value = config.edgeone.secretKey || '';
+        document.getElementById('edgeone-region').value = config.edgeone.region || 'ap-hongkong';
+      }
+
+      renderCloudflareAccounts();
+      updatePreview();
+      loadStatus();
+    }
+
+    function renderCloudflareAccounts() {
+      const container = document.getElementById('cf-accounts-list');
+      container.innerHTML = config.cloudflare?.accounts?.map((account, accIndex) => `
+        <div class="account-item">
+          <h4>
+            账户: ${account.name}
+            <button class="remove-btn" onclick="removeCloudflareAccount(${accIndex})">✕</button>
+          </h4>
+          <div class="form-group">
+            <label>账户名称</label>
+            <input type="text" value="${account.name}" onchange="updateCloudflareAccount(${accIndex}, 'name', this.value)">
+          </div>
+          <div class="form-group">
+            <label>API Token</label>
+            <input type="password" value="${account.token}" placeholder="输入或保持原 Token" onchange="updateCloudflareAccount(${accIndex}, 'token', this.value)">
+          </div>
+          <h5 style="margin: 16px 0 12px;">Zones</h5>
+          ${account.zones?.map((zone, zoneIndex) => `
+            <div class="zone-item">
+              <h5>
+                ${zone.domain}
+                <button class="remove-btn" onclick="removeCloudflareZone(${accIndex}, ${zoneIndex})">✕</button>
+              </h5>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>域名</label>
+                  <input type="text" value="${zone.domain}" onchange="updateCloudflareZone(${accIndex}, ${zoneIndex}, 'domain', this.value)">
+                </div>
+                <div class="form-group">
+                  <label>Zone ID</label>
+                  <input type="text" value="${zone.zone_id}" onchange="updateCloudflareZone(${accIndex}, ${zoneIndex}, 'zone_id', this.value)">
+                </div>
+              </div>
+            </div>
+          `).join('') || ''}
+          <button class="btn btn-secondary" onclick="addCloudflareZone(${accIndex})">+ 添加 Zone</button>
+        </div>
+      `).join('') || '<p style="color: #718096;">暂无配置账户</p>';
+    }
+
+    function selectProvider(provider) {
+      config.provider = provider;
+      config.cloudflare.enabled = provider === 'cloudflare';
+      config.edgeone.enabled = provider === 'edgeone';
+      renderConfig();
+    }
+
+    function showTab(tabId, e) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      e.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function addCloudflareAccount() {
+      if (!config.cloudflare) config.cloudflare = { accounts: [] };
+      config.cloudflare.accounts.push({ name: `账户 ${config.cloudflare.accounts.length + 1}`, token: '', zones: [] });
+      renderCloudflareAccounts();
+    }
+
+    function removeCloudflareAccount(index) {
+      config.cloudflare.accounts.splice(index, 1);
+      renderCloudflareAccounts();
+    }
+
+    function updateCloudflareAccount(index, field, value) {
+      config.cloudflare.accounts[index][field] = value;
+    }
+
+    function addCloudflareZone(accIndex) {
+      config.cloudflare.accounts[accIndex].zones.push({ domain: '', zone_id: '' });
+      renderCloudflareAccounts();
+    }
+
+    function removeCloudflareZone(accIndex, zoneIndex) {
+      config.cloudflare.accounts[accIndex].zones.splice(zoneIndex, 1);
+      renderCloudflareAccounts();
+    }
+
+    function updateCloudflareZone(accIndex, zoneIndex, field, value) {
+      config.cloudflare.accounts[accIndex].zones[zoneIndex][field] = value;
+    }
+
+    async function validateCloudflareToken() {
+      const token = document.getElementById('cf-validate-token').value.trim();
+      if (!token) {
+        showModal('warning', '输入不完整', '请输入 Cloudflare API Token 才能进行验证。');
+        return;
+      }
+
+      showModal('loading', '正在验证', '正在连接 Cloudflare API，请稍候...');
+
+      try {
+        const response = await fetch('/api/validate/cloudflare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        const result = await response.json();
+
+        if (result.valid) {
+          showModal('success', '✓ 验证成功', `Token 有效！可访问 ${result.zones.length} 个 Zone。`);
+        } else {
+          showModal('error', '✗ 验证失败', `原因: ${result.error || '未知错误'}<br><br><small>请检查您的 Token 权限和格式是否正确。</small>`);
+        }
+      } catch (error) {
+        showModal('error', '✗ 验证失败', `网络错误: ${error.message}<br><br><small>请检查网络连接或稍后重试。</small>`);
+      }
+    }
+
+    async function validateEdgeOneCredentials() {
+      const secretId = document.getElementById('edgeone-secret-id').value.trim();
+      const secretKey = document.getElementById('edgeone-secret-key').value.trim();
+      const region = document.getElementById('edgeone-region').value;
+
+      if (!secretId || !secretKey) {
+        showModal('warning', '输入不完整', '请输入 SecretId 和 SecretKey 才能进行验证。');
+        return;
+      }
+
+      showModal('loading', '正在验证', '正在连接腾讯云 EdgeOne API，请稍候...');
+
+      try {
+        const response = await fetch('/api/validate/edgeone', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secretId, secretKey, region })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`HTTP错误: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.valid) {
+          if (!config.edgeone) config.edgeone = { sites: [] };
+          config.edgeone.secretId = secretId;
+          config.edgeone.secretKey = secretKey;
+          config.edgeone.region = region;
+          config.edgeone.enabled = true;
+          config.edgeone.sites = result.sites || [];
+          await saveAllConfig();
+          closeModal();
+          showModal('success', '✓ 验证成功', `腾讯云 EdgeOne 凭证验证通过！<br>账户: ${secretId}<br>站点数: ${result.sites?.length || 0}`);
+        } else {
+          showModal('error', '✗ 验证失败', `原因: ${result.error}<br><br><small>请检查您的 SecretId 和 SecretKey 是否正确。</small>`);
+        }
+      } catch (error) {
+        showModal('error', '✗ 验证失败', `网络错误: ${error.message}<br><br><small>请检查网络连接或稍后重试。</small>`);
+      }
+    }
+
+    function updatePreview() {
+      const title = document.getElementById('website-title').value || 'Analytics Dashboard';
+      const favicon = document.getElementById('website-favicon').value || '/favicon.svg';
+      const description = document.getElementById('website-description').value || '';
+
+      document.getElementById('preview-title').textContent = title;
+      document.getElementById('preview-favicon').src = favicon;
+      document.getElementById('preview-description').textContent = description;
+    }
+
+    document.getElementById('website-title').addEventListener('input', updatePreview);
+    document.getElementById('website-favicon').addEventListener('input', updatePreview);
+    document.getElementById('website-description').addEventListener('input', updatePreview);
+
+    async function saveAllConfig() {
+      config.website = {
+        title: document.getElementById('website-title').value,
+        favicon: document.getElementById('website-favicon').value,
+        description: document.getElementById('website-description').value
+      };
+      config.updateInterval = parseInt(document.getElementById('update-interval').value);
+
+      try {
+        const response = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(config)
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          showModal('success', '✓ 保存成功', '配置已成功保存！');
+        } else {
+          showModal('error', '✗ 保存失败', `原因: ${result.error}<br><br><small>请检查服务器日志获取更多详情。</small>`);
+        }
+      } catch (error) {
+        showModal('error', '✗ 保存失败', `网络错误: ${error.message}<br><br><small>请检查网络连接或稍后重试。</small>`);
+      }
+    }
+
+    async function triggerUpdate() {
+      showModal('loading', '正在更新', '正在从 API 获取最新数据，请稍候...');
+      try {
+        const response = await fetch('/api/update', { method: 'POST' });
+        const result = await response.json();
+        if (result.success) {
+          showModal('success', '✓ 更新完成', '数据更新成功！最新数据已保存。');
+          loadStatus();
+        } else {
+          showModal('error', '✗ 更新失败', `原因: ${result.error}<br><br><small>请检查 API 凭证和网络连接。</small>`);
+        }
+      } catch (error) {
+        showModal('error', '✗ 更新失败', `网络错误: ${error.message}<br><br><small>请检查网络连接或稍后重试。</small>`);
+      }
+    }
+
+    async function loadStatus() {
+      try {
+        const response = await fetch('/api/status');
+        const status = await response.json();
+
+        document.getElementById('system-status').innerHTML = `
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="value">${status.provider?.toUpperCase() || 'N/A'}</div>
+              <div class="label">当前 Provider</div>
+            </div>
+            <div class="stat-item">
+              <div class="value">${status.cloudflareEnabled ? '✓' : '✗'}</div>
+              <div class="label">Cloudflare</div>
+            </div>
+            <div class="stat-item">
+              <div class="value">${status.edgeoneEnabled ? '✓' : '✗'}</div>
+              <div class="label">腾讯云 EdgeOne</div>
+            </div>
+            <div class="stat-item">
+              <div class="value">${status.lastUpdate ? new Date(status.lastUpdate).toLocaleString() : '从未'}</div>
+              <div class="label">最后更新</div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        document.getElementById('system-status').innerHTML = '<div class="alert alert-error">加载状态失败</div>';
+      }
+    }
+
+    function showAlert(message, type) {
+      const container = document.getElementById('alert-container');
+      container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+      setTimeout(() => container.innerHTML = '', 5000);
+    }
+
+    function showModal(type, title, message) {
+      const overlay = document.getElementById('modal-overlay');
+      const icon = document.getElementById('modal-icon');
+      const titleEl = document.getElementById('modal-title');
+      const messageEl = document.getElementById('modal-message');
+      const btn = document.getElementById('modal-btn');
+
+      icon.className = 'modal-icon ' + type;
+      
+      const icons = {
+        success: '✓',
+        error: '✗',
+        warning: '⚠',
+        info: 'ℹ',
+        loading: '⏳'
+      };
+      icon.textContent = icons[type] || 'ℹ';
+      
+      titleEl.textContent = title;
+      messageEl.innerHTML = message;
+
+      if (type === 'success') {
+        btn.className = 'modal-btn success';
+      } else if (type === 'error') {
+        btn.className = 'modal-btn danger';
+      } else {
+        btn.className = 'modal-btn primary';
+      }
+
+      overlay.classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('show');
+    }
+
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+      return num.toLocaleString();
+    }
+
+    document.getElementById('modal-overlay').addEventListener('click', function(e) {
+      const isVerifyModal = document.getElementById('verify-modal').classList.contains('show');
+      if (e.target.id === 'modal-overlay' && !isVerifyModal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !document.getElementById('verify-modal').classList.contains('show')) {
+        closeModal();
+      }
+    });
+
+    let verifyNum1, verifyNum2, verifyAnswer, verifyOperator;
+
+    function startVerify() {
+      const operators = ['+', '-', '×'];
+      verifyOperator = operators[Math.floor(Math.random() * operators.length)];
+
+      if (verifyOperator === '×') {
+        verifyNum1 = Math.floor(Math.random() * 9) + 2;
+        verifyNum2 = Math.floor(Math.random() * 9) + 2;
+        verifyAnswer = verifyNum1 * verifyNum2;
+      } else {
+        verifyNum1 = Math.floor(Math.random() * 50) + 10;
+        verifyNum2 = Math.floor(Math.random() * 30) + 5;
+        if (verifyOperator === '-') {
+          if (verifyNum1 < verifyNum2) [verifyNum1, verifyNum2] = [verifyNum2, verifyNum1];
+          verifyAnswer = verifyNum1 - verifyNum2;
+        } else {
+          verifyAnswer = verifyNum1 + verifyNum2;
+        }
+      }
+
+      const userAnswer = prompt(`安全验证\n\n请计算: ${verifyNum1} ${verifyOperator} ${verifyNum2} = ?\n\n(防止误操作，请输入计算结果)`);
+      
+      if (userAnswer === null) return;
+      
+      const userNum = parseInt(userAnswer.trim());
+      
+      if (userNum !== verifyAnswer) {
+        alert(`答案错误！正确答案是: ${verifyAnswer}`);
+        return;
+      }
+
+      if (!confirm('确定要恢复初始状态吗？所有数据将被清空！')) return;
+
+      performReset();
+    }
+
+    async function performReset() {
+      showModal('loading', '正在恢复', '正在清空数据并重置系统...');
+
+      try {
+        const response = await fetch('/api/reset', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          showModal('success', '✓ 重置成功', '系统已恢复初始状态，页面即将刷新...');
+          setTimeout(() => {
+            window.location.href = '/admin/install.html';
+          }, 2000);
+        } else {
+          showModal('error', '✗ 重置失败', data.error || '未知错误');
+        }
+      } catch (error) {
+        showModal('error', '✗ 重置失败', error.message);
+      }
+    }
+
+    function resetSystem() {
+      console.log('[Reset] 按钮被点击');
+      
+      const operators = ['+', '-', '×'];
+      verifyOperator = operators[Math.floor(Math.random() * operators.length)];
+
+      if (verifyOperator === '×') {
+        verifyNum1 = Math.floor(Math.random() * 9) + 2;
+        verifyNum2 = Math.floor(Math.random() * 9) + 2;
+        verifyAnswer = verifyNum1 * verifyNum2;
+      } else {
+        verifyNum1 = Math.floor(Math.random() * 50) + 10;
+        verifyNum2 = Math.floor(Math.random() * 30) + 5;
+        if (verifyOperator === '-') {
+          if (verifyNum1 < verifyNum2) [verifyNum1, verifyNum2] = [verifyNum2, verifyNum1];
+          verifyAnswer = verifyNum1 - verifyNum2;
+        } else {
+          verifyAnswer = verifyNum1 + verifyNum2;
+        }
+      }
+
+      console.log('[Reset] 题目:', verifyNum1, verifyOperator, verifyNum2, '=', verifyAnswer);
+
+      setTimeout(function() {
+        const userAnswer = prompt(`安全验证\n\n请计算: ${verifyNum1} ${verifyOperator} ${verifyNum2} = ?\n\n(防止误操作，请输入计算结果)`);
+        
+        console.log('[Reset] 用户输入:', userAnswer);
+        
+        if (userAnswer === null) {
+          console.log('[Reset] 用户取消');
+          return;
+        }
+        
+        const userNum = parseInt(userAnswer.trim());
+        console.log('[Reset] 用户答案:', userNum, '正确答案:', verifyAnswer);
+        
+        if (userNum !== verifyAnswer) {
+          alert(`答案错误！正确答案是: ${verifyAnswer}`);
+          return;
+        }
+
+        if (!confirm('确定要恢复初始状态吗？所有数据将被清空！')) return;
+
+        performReset();
+      }, 100);
+    }
+
+    init();
+  </script>
+</body>
+</html>

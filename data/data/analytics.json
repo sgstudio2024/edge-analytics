@@ -1,0 +1,16 @@
+{
+  "accounts": [
+    {
+      "name": "账户名称",
+      "zones": [
+        {
+          "zone_id": "your_zone_id",
+          "domain": "your-domain.com",
+          "error": "Request failed with status code 400",
+          "days": [],
+          "hours": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - 暂无数据</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; padding: 48px; max-width: 520px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; }
+        .icon { font-size: 64px; margin-bottom: 24px; }
+        h1 { font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px; }
+        .message { color: #718096; font-size: 15px; line-height: 1.7; margin-bottom: 32px; }
+        .btn { display: inline-block; padding: 14px 32px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; margin: 6px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+        .btn-secondary { background: #e2e8f0; color: #4a5568; }
+        .btn-secondary:hover { background: #cbd5e0; }
+        .info { background: #f7fafc; border-radius: 12px; padding: 20px; margin-top: 24px; text-align: left; }
+        .info h3 { font-size: 14px; color: #4a5568; margin-bottom: 12px; }
+        .info p { font-size: 13px; color: #718096; line-height: 1.6; }
+        .info code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📊</div>
+        <h1>暂无数据</h1>
+        <p class="message">系统尚未配置有效的 API 账户，无法获取流量数据。<br>请先配置 Cloudflare 或 EdgeOne 的 API 凭证。</p>
+        
+        <a href="/adminPath/admin/login.html" class="btn btn-primary">前往配置</a>
+        <a href="/" class="btn btn-secondary">刷新数据</a>
+        
+        <div class="info">
+            <h3>📋 配置说明</h3>
+            <p>
+                <strong>Cloudflare:</strong> 需要 API Token，可在 Cloudflare 仪表板的 "My Profile" → "API Tokens" 中创建。<br><br>
+                <strong>腾讯云 EdgeOne:</strong> 需要 SecretId 和 SecretKey，可在 <a href="https://console.cloud.tencent.com/cam/capi" target="_blank" style="color: #667eea;">腾讯云控制台</a> 创建。
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const adminPath = 'ADMIN_PATH';
+        document.querySelector('.btn-primary').href = adminPath + '/login.html';
+    </script>
+</body>
+</html>
