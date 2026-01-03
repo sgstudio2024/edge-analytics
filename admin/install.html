@@ -72,11 +72,11 @@
             <div class="form-group">
                 <label>API 提供商</label>
                 <div class="provider-selector">
-                    <div class="provider-card active" onclick="selectProvider('cloudflare', event)">
+                    <div class="provider-card active" onclick="selectProvider('cloudflare')">
                         <div class="provider-icon">☁️</div>
                         <div class="provider-name">Cloudflare</div>
                     </div>
-                    <div class="provider-card" onclick="selectProvider('edgeone', event)">
+                    <div class="provider-card" onclick="selectProvider('edgeone')">
                         <div class="provider-icon">⚡</div>
                         <div class="provider-name">EdgeOne</div>
                     </div>
@@ -138,10 +138,10 @@
             document.getElementById('step1').style.display = 'block';
         }
 
-        function selectProvider(provider, event) {
+        function selectProvider(provider) {
             selectedProvider = provider;
             document.querySelectorAll('.provider-card').forEach(card => card.classList.remove('active'));
-            event.target.closest('.provider-card').classList.add('active');
+            window.event.target.closest('.provider-card').classList.add('active');
             
             document.getElementById('cloudflare-config').style.display = provider === 'cloudflare' ? 'block' : 'none';
             document.getElementById('edgeone-config').style.display = provider === 'edgeone' ? 'block' : 'none';
